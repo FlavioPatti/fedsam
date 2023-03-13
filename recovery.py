@@ -24,6 +24,7 @@ loss_fn, trainloader, validloader =  inversefed.construct_dataloaders('CIFAR100'
 
 model = res20(lr=0.1, num_classes=100, device='cuda')
 model.to(**setup)
+
 if trained_model:
     checkpoint = torch.load('./checkpoint')
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -36,21 +37,12 @@ print('\nTest Accuracy: {}'.format(accuracy))
 
 dm = torch.as_tensor(inversefed.consts.cifar10_mean, **setup)[:, None, None]
 ds = torch.as_tensor(inversefed.consts.cifar10_std, **setup)[:, None, None]
-def plot(tensor):
-    tensor = tensor.clone().detach()
-    tensor.mul_(ds).add_(dm).clamp_(0, 1)
-    if tensor.shape[0] == 1:
-        return plt.imshow(tensor[0].permute(1, 2, 0).cpu());
-    else:
-        fig, axes = plt.subplots(1, tensor.shape[0], figsize=(12, tensor.shape[0]*12))
-        for i, im in enumerate(tensor):
-            axes[i].imshow(im.permute(1, 2, 0).cpu());
 
 
 
 if num_images == 1:
     if target_id == -1:  # demo image
-        # Specify PIL filter for lower pillow versions
+
         ground_truth = torch.as_tensor(
             np.array(Image.open("auto.jpg").resize((32, 32), Image.BICUBIC)) / 255, **setup
         )
@@ -59,7 +51,8 @@ if num_images == 1:
         labels = torch.as_tensor((1,), device=setup["device"])
         target_id = -1
     else:
-        #Se il target è none prende un immagine a caso altrimenti quella dell'id scelto
+        #If the target is None take a random image else take id img
+
         if target_id is None:
             target_id = np.random.randint(len(validloader.dataset))
         else:
