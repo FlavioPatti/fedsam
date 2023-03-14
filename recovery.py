@@ -104,7 +104,6 @@ test_mse = (output.detach() - ground_truth).pow(2).mean()
 feat_mse = (model(output.detach())- model(ground_truth)).pow(2).mean()  
 test_psnr = inversefed.metrics.psnr(output, ground_truth, factor=1/ds)
 
-print('output')
 
 os.makedirs(image_path, exist_ok=True)
 output_denormalized = torch.clamp(output * ds + dm, 0, 1)
