@@ -1,6 +1,7 @@
 """Mechanisms for image reconstruction from parameter gradients."""
 
 import torch
+import wandb
 from collections import defaultdict, OrderedDict
 from inversefed.nn import MetaMonkey
 from .metrics import total_variation as TV
@@ -59,7 +60,7 @@ class GradientReconstructor():
         self.loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
         self.iDLG = True
 
-    def reconstruct(self, input_data, labels, img_shape=(3, 32, 32), dryrun=False, eval=True, tol=None):
+    def reconstruct(self, input_data, labels, img_shape=(3, 32, 32), n_epochs = 60, dryrun=False, eval=True, tol=None):
         """Reconstruct image from gradient."""
         start_time = time.time()
         if eval:
@@ -91,7 +92,7 @@ class GradientReconstructor():
 
         try:
             for trial in range(self.config['restarts']):
-                x_trial, labels = self._run_trial(x[trial], input_data, labels, dryrun=dryrun)
+                x_trial, labels = self._run_trial(x[trial], input_data, labels, dryrun=dryrun, n_epochs=n_epochs)
                 # Finalize
                 scores[trial] = self._score_trial(x_trial, input_data, labels)
                 x[trial] = x_trial
@@ -107,10 +108,10 @@ class GradientReconstructor():
         if self.config['scoring_choice'] in ['pixelmean', 'pixelmedian']:
             x_optimal, stats = self._average_trials(x, labels, input_data, stats)
         else:
-            print('Choosing optimal result ...')
+            #print('Choosing optimal result ...')
             scores = scores[torch.isfinite(scores)]  # guard against NaN/-Inf scores?
             optimal_index = torch.argmin(scores)
-            print(f'Optimal result score: {scores[optimal_index]:2.4f}')
+            #print(f'Optimal result score: {scores[optimal_index]:2.4f}')
             stats['opt'] = scores[optimal_index].item()
             x_optimal = x[optimal_index]
 
@@ -127,7 +128,7 @@ class GradientReconstructor():
         else:
             raise ValueError()
 
-    def _run_trial(self, x_trial, input_data, labels, dryrun=False):
+    def _run_trial(self, x_trial, input_data, labels, dryrun=False, n_epochs = 60):
         x_trial.requires_grad = True
         if self.reconstruct_label:
             output_test = self.model(x_trial)
@@ -162,6 +163,10 @@ class GradientReconstructor():
             for iteration in range(max_iterations):
                 closure = self._gradient_closure(optimizer, x_trial, input_data, labels)
                 rec_loss = optimizer.step(closure)
+
+                d = {f"{len(labels)}imgs_recoveryLoss_res20_{n_epochs}epochs": rec_loss }
+                wandb.log(d)
+
                 if self.config['lr_decay']:
                     scheduler.step()
 
