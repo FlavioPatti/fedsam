@@ -13,6 +13,7 @@ import torch.nn as nn
 import wandb
 from datetime import datetime
 
+from timm.models.vision_transformer import vit_small_patch16_224
 import metrics.writer as metrics_writer
 from baseline_constants import MAIN_PARAMS, MODEL_PARAMS, ACCURACY_KEY, CLIENT_PARAMS_KEY, CLIENT_GRAD_KEY, \
     CLIENT_TASK_KEY
@@ -68,7 +69,7 @@ def main():
         ClientModel = getattr(mod, 'ClientModel')
     else:
         print('We use ViT small')
-        from timm.models.vision_transformer import vit_small_patch16_224
+        #from timm.models.vision_transformer import vit_small_patch16_224
         ClientModel = vit_small_patch16_224(pretrained=args.Pretrained)
     
     dataset = importlib.import_module(dataset_path)
