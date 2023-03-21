@@ -61,8 +61,16 @@ def main():
 
     # Load model and dataset
     print('############################## %s ##############################' % model_path)
-    mod = importlib.import_module(model_path)
-    ClientModel = getattr(mod, 'ClientModel')
+    print(f"model = {args.model}")
+    if args.model == "resnet20":
+        print('We use ResNet20')
+        mod = importlib.import_module(model_path)
+        ClientModel = getattr(mod, 'ClientModel')
+    else:
+        print('We use ViT small')
+        from timm.models.vision_transformer import vit_small_patch16_224
+        ClientModel = vit_small_patch16_224(pretrained=args.Pretrained)
+    
     dataset = importlib.import_module(dataset_path)
     ClientDataset = getattr(dataset, 'ClientDataset')
 
