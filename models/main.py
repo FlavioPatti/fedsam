@@ -1,4 +1,4 @@
-"""Script to run the baselines."""
+""""Script to run the baselines."""
 import importlib
 import inspect
 import json
@@ -12,8 +12,10 @@ import torch
 import torch.nn as nn
 import wandb
 from datetime import datetime
+from torch.nn import Linear
+from cifar100.modeling import VisionTransformer, CONFIGS
 
-from timm.models.vision_transformer import vit_small_patch16_224
+#from timm.models.vision_transformer import vit_small_patch16_224
 import metrics.writer as metrics_writer
 from baseline_constants import MAIN_PARAMS, MODEL_PARAMS, ACCURACY_KEY, CLIENT_PARAMS_KEY, CLIENT_GRAD_KEY, \
     CLIENT_TASK_KEY
@@ -69,8 +71,13 @@ def main():
         ClientModel = getattr(mod, 'ClientModel')
     else:
         print('We use ViT small')
-        #from timm.models.vision_transformer import vit_small_patch16_224
-        ClientModel = vit_small_patch16_224(pretrained=args.Pretrained)
+        config = CONFIGS['ViT-L_32']
+        num_classes = 10 if args.dataset == "cifar10" else 100
+        client_model = VisionTransformer(config, 32, zero_head=True, num_classes=num_classes)
+        
+        #client_model = np.load('./vit/sam_ViT-B_32.npz')
+        #model.load_state_dict(checkpoint['model_state_dict'])
+        client_model.device = 'cuda'
     
     dataset = importlib.import_module(dataset_path)
     ClientDataset = getattr(dataset, 'ClientDataset')
@@ -93,7 +100,7 @@ def main():
         model_params = tuple(model_params_list) #(lr,num_classes)
 
     # Create client model, and share params with servers model
-    client_model = ClientModel(*model_params, device)
+    #client_model = ClientModel(*model_params, device)
     if args.load and wandb.run.resumed:  # load model from checkpoint
         client_model, checkpoint, ckpt_path_resumed = resume_run(client_model, args, wandb.run)
         if args.restart:    # start new wandb run

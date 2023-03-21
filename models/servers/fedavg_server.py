@@ -84,9 +84,9 @@ class Server:
         if isinstance(c.model, torch.nn.DataParallel):
             sys_metrics[c.id][BYTES_READ_KEY] += c.model.module.size
             sys_metrics[c.id][BYTES_WRITTEN_KEY] += c.model.module.size
-        else:
-            sys_metrics[c.id][BYTES_READ_KEY] += c.model.size
-            sys_metrics[c.id][BYTES_WRITTEN_KEY] += c.model.size
+   #     else:
+   #         sys_metrics[c.id][BYTES_READ_KEY] += c.model.size
+   #         sys_metrics[c.id][BYTES_WRITTEN_KEY] += c.model.size
 
         sys_metrics[c.id][CLIENT_PARAMS_KEY] = c.params_norm()
         sys_metrics[c.id][CLIENT_GRAD_KEY] = c.total_grad_norm()
@@ -233,6 +233,5 @@ class Server:
             save_info['swa_n'] = swa_n
         torch.save(save_info, ckpt_path)
         return ckpt_path
-
 
 

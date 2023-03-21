@@ -73,7 +73,7 @@ class Client:
         for j, data in enumerate(self.trainloader):
             input_data_tensor, target_data_tensor = data[0].to(self.device), data[1].to(self.device)
             optimizer.zero_grad()
-            outputs = self.model(input_data_tensor)
+            outputs = self.model(input_data_tensor)[0]
             loss = criterion(outputs, target_data_tensor)
             loss.backward()  # gradient inside the optimizer (memory usage increases here)
             running_loss += loss.item()
@@ -138,8 +138,12 @@ class Client:
         test_loss = 0
         for data in dataloader:
             input_tensor, labels_tensor = data[0].to(self.device), data[1].to(self.device)
+           # print(f" input = {type(input_tensor)}")
             with torch.no_grad():
-                outputs = self.model(input_tensor)
+                outputs = self.model(input_tensor)[0]
+                #print(f"output = {outputs}")
+                #outputs = torch.tensor(outputs)
+                #print(f"output = {type(outputs)}")
                 test_loss += F.cross_entropy(outputs, labels_tensor, reduction='sum').item()
                 _, predicted = torch.max(outputs.data, 1)  # same as torch.argmax()
                 total += labels_tensor.size(0)
