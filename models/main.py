@@ -24,8 +24,8 @@ from utils.cutout import Cutout
 from utils.main_utils import *
 from utils.model_utils import read_data
 
-os.environ["WANDB_API_KEY"] = ""
-os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_API_KEY"] = "a4771dae610ad0306d4c407ecca287079d83d0d9"
+os.environ["WANDB_MODE"] = "online"
 
 def main():
     args = parse_args()
@@ -48,7 +48,7 @@ def main():
     device = torch.device(args.device if torch.cuda.is_available else 'cpu')
     print("Using device:", torch.cuda.get_device_name(device) if device != 'cpu' else 'cpu')
 
-    run, job_name = init_wandb(args, alpha, run_id=args.wandb_run_id)
+    #run, job_name = init_wandb(args, alpha, run_id=args.wandb_run_id)
 
     # Obtain the path to client's model (e.g. cifar10/cnn.py), client class and servers class
     model_path = '%s/%s.py' % (args.dataset, args.model)
@@ -100,7 +100,7 @@ def main():
         model_params = tuple(model_params_list) #(lr,num_classes)
 
     # Create client model, and share params with servers model
-    #client_model = ClientModel(*model_params, device)
+    client_model = ClientModel(*model_params, device)
     if args.load and wandb.run.resumed:  # load model from checkpoint
         client_model, checkpoint, ckpt_path_resumed = resume_run(client_model, args, wandb.run)
         if args.restart:    # start new wandb run
@@ -162,6 +162,8 @@ def main():
             swa_n = checkpoint['swa_n']
             print("SWA n:", swa_n)
         print("SWA starts @ round:", swa_start)
+
+    wandb.init(entity = "aml-2022", project="FedAvg")
 
     # Start training
     for i in range(start_round, num_rounds):
@@ -355,8 +357,7 @@ def print_stats(num_round, server, train_clients, train_num_samples, test_client
     test_stat_metrics = server.test_model(test_clients, args.batch_size, set_to_use='test' )
     test_metrics = print_metrics(test_stat_metrics, test_num_samples, fp, prefix='{}_'.format('test'))
 
-    wandb.log({'Validation accuracy': val_metrics[0], 'Validation loss': val_metrics[1],
-               'Test accuracy': test_metrics[0], 'Test loss': test_metrics[1], 'round': num_round}, commit=False)
+    wandb.log({'Test accuracy': test_metrics[0], 'Test loss': test_metrics[1], 'round': num_round}, commit=False)
 
     return val_metrics, test_metrics
 
