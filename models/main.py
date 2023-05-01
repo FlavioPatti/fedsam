@@ -48,7 +48,7 @@ def main():
     device = torch.device(args.device if torch.cuda.is_available else 'cpu')
     print("Using device:", torch.cuda.get_device_name(device) if device != 'cpu' else 'cpu')
 
-    #run, job_name = init_wandb(args, alpha, run_id=args.wandb_run_id)
+    run, job_name = init_wandb(args, alpha, run_id=args.wandb_run_id)
 
     # Obtain the path to client's model (e.g. cifar10/cnn.py), client class and servers class
     model_path = '%s/%s.py' % (args.dataset, args.model)
@@ -162,8 +162,6 @@ def main():
             swa_n = checkpoint['swa_n']
             print("SWA n:", swa_n)
         print("SWA starts @ round:", swa_start)
-
-    wandb.init(entity = "aml-2022", project="FedAvg")
 
     # Start training
     for i in range(start_round, num_rounds):
@@ -335,10 +333,10 @@ def init_wandb(args, alpha=None, run_id=None):
     run = wandb.init(
                 id = run_id,
                 # Set entity to specify your username or team name
-                entity="federated-learning",
+                entity = "aml-2022", 
                 # Set the project where this run will be logged
-                project='fl_' + args.dataset,
-                group=group_name,
+                project="FedAvg_05",
+                group='res20',
                 # Track hyperparameters and run metadata
                 config=configuration,
                 resume="allow")
@@ -357,7 +355,7 @@ def print_stats(num_round, server, train_clients, train_num_samples, test_client
     test_stat_metrics = server.test_model(test_clients, args.batch_size, set_to_use='test' )
     test_metrics = print_metrics(test_stat_metrics, test_num_samples, fp, prefix='{}_'.format('test'))
 
-    wandb.log({'Test accuracy': test_metrics[0], 'Test loss': test_metrics[1], 'round': num_round}, commit=False)
+    wandb.log({'Test accuracy': test_metrics[0], 'Test loss': test_metrics[1], 'round': num_round}, commit=True)
 
     return val_metrics, test_metrics
 

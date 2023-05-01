@@ -2,7 +2,7 @@
 
 pushd ../models
 
-declare -a alphas=("1000") #1000 , 0.5, 0 
+declare -a alphas=("0.5") #1000 , 0.5, 0 
 
 # per res20 batch = 128, con vit batch = 512
 
