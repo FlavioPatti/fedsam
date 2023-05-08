@@ -100,7 +100,7 @@ def main():
         model_params = tuple(model_params_list) #(lr,num_classes)
 
     # Create client model, and share params with servers model
-    client_model = ClientModel(*model_params, device)
+    #client_model = ClientModel(*model_params, device)
     if args.load and wandb.run.resumed:  # load model from checkpoint
         client_model, checkpoint, ckpt_path_resumed = resume_run(client_model, args, wandb.run)
         if args.restart:    # start new wandb run
@@ -335,8 +335,8 @@ def init_wandb(args, alpha=None, run_id=None):
                 # Set entity to specify your username or team name
                 entity = "aml-2022", 
                 # Set the project where this run will be logged
-                project="FedAvg_05",
-                group='res20',
+                project="FedAvg2",
+                group='vit_L',
                 # Track hyperparameters and run metadata
                 config=configuration,
                 resume="allow")
