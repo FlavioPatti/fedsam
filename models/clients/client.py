@@ -34,6 +34,7 @@ class Client:
         self.mixup = mixup
         self.mixup_alpha = mixup_alpha # α controls the strength of interpolation between feature-target pairs
 
+
     def train(self, num_epochs=1, batch_size=10, minibatch=None):
         """Trains on self.model using the client's train_data.
 
@@ -140,6 +141,7 @@ class Client:
             input_tensor, labels_tensor = data[0].to(self.device), data[1].to(self.device)
            # print(f" input = {type(input_tensor)}")
             with torch.no_grad():
+                print(f'class: {self.model.__class__.__name__}')
                 outputs = self.model(input_tensor)[0] #for vit
                 #print(f"output = {outputs}")
                 #outputs = torch.tensor(outputs)

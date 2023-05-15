@@ -6,6 +6,7 @@ SERVER_OPTS = ['sgd', 'adam', 'adagrad', 'fedavgm']
 CLIENT_ALGORITHMS = ['asam', 'sam']
 MINIMIZERS = ['sam', 'asam']
 SIM_TIMES = ['small', 'medium', 'large']
+VIT_TYPE = ['ViT-S', 'ViT-B', 'ViT-L']
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -183,6 +184,12 @@ def parse_args():
                         type=str,
                         choices=SIM_TIMES,
                         default='large')
+    
+    parser.add_argument('-type',
+                        help='vision transform type: small, base or large;',
+                        type=str,
+                        choices=VIT_TYPE,
+                        default='NULL')
     return parser.parse_args()
 
 def check_args(args):

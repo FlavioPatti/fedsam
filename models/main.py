@@ -13,7 +13,10 @@ import torch.nn as nn
 import wandb
 from datetime import datetime
 from torch.nn import Linear
-from cifar100.modeling import VisionTransformer, CONFIGS
+from cifar100.vision_transformer import VisionTransformer, CONFIGS
+
+
+
 
 #from timm.models.vision_transformer import vit_small_patch16_224
 import metrics.writer as metrics_writer
@@ -66,17 +69,13 @@ def main():
     print('############################## %s ##############################' % model_path)
     print(f"model = {args.model}")
     if args.model == "resnet20":
-        print('We use ResNet20')
         mod = importlib.import_module(model_path)
         ClientModel = getattr(mod, 'ClientModel')
     else:
-        print('We use ViT small')
-        config = CONFIGS['ViT-L_32']
+        print(f"type = {args.type}")
+        config = CONFIGS[args.type]
         num_classes = 10 if args.dataset == "cifar10" else 100
         client_model = VisionTransformer(config, 32, zero_head=True, num_classes=num_classes)
-        
-        #client_model = np.load('./vit/sam_ViT-B_32.npz')
-        #model.load_state_dict(checkpoint['model_state_dict'])
         client_model.device = 'cuda'
     
     dataset = importlib.import_module(dataset_path)
