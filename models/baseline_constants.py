@@ -18,7 +18,7 @@ MODEL_PARAMS = {
     'cifar100.cnn': (0.01, 100),
     'cifar10.cnn': (0.01, 10), #lr, #classes
     'cifar100.resnet20': (0.01, 100),
-    'cifar100.vit_small': (0.01,100)
+    'cifar100.vision_transformer': (0.01,100)
 }
 """dict: Model specific parameter specification"""
 
