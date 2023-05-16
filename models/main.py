@@ -336,8 +336,8 @@ def init_wandb(args, alpha=None, run_id=None):
                 # Set entity to specify your username or team name
                 entity = "aml-2022", 
                 # Set the project where this run will be logged
-                project="FedAvg_0",
-                group='resnet20',
+                project="FedAvg_1000",
+                group='vit_L',
                 # Track hyperparameters and run metadata
                 config=configuration,
                 resume="allow")
