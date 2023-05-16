@@ -5,7 +5,8 @@ pushd ../models
 declare -a alphas=("1000") #1000 , 0.5, 0 
 
 # per res20 batch = 128, con vit batch = 512
-
+# se vuoi caricare un checkpoint aggiungi queste cose
+# -load --wandb-run-id n_id --restart-round 750
 function run_fedavg() {
   echo "############################################## Running FedAvg ##############################################"
   alpha="$1"
