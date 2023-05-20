@@ -1,9 +1,6 @@
-import os
-import logging
 import numpy as np
 import matplotlib.pyplot as plt 
 from statistics import mean 
-import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -17,8 +14,9 @@ from torchvision import transforms
 from torchvision.models import alexnet, vgg16, resnet18, resnet50
 from PIL import Image
 from tqdm import tqdm
+from torch.utils.data import random_split
 
-NUM_GROUP = 8
+NUM_GROUP = 2
 # GroupNorm takes number of groups to divide the channels in and the number of channels to expect
 # in the input. 
 
@@ -26,7 +24,7 @@ def _weights_init(m):
     classname = m.__class__.__name__
     #print(classname)
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
-        init.kaiming_normal_(m.weight)
+        init.kaiming_normal_(m.weight, nonlinearity='relu')
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -62,7 +60,6 @@ class BasicBlock(nn.Module):
 class ClientModel(nn.Module):
     """implementation of ResNet20 with GN layers"""
     def __init__(self, lr, num_classes, device):
-    #def __init__(self, num_classes=100):
       super(ClientModel, self).__init__()
       block = BasicBlock
       num_blocks = [3,3,3]
@@ -77,11 +74,12 @@ class ClientModel(nn.Module):
       self.layer1 = self._make_layer(block, 16, num_blocks[0], stride=1)
       self.layer2 = self._make_layer(block, 32, num_blocks[1], stride=2)
       self.layer3 = self._make_layer(block, 64, num_blocks[2], stride=2)
+      self.avgpool = nn.AvgPool2d(kernel_size=(8,8), stride=(1,1))
       self.linear = nn.Linear(64, num_classes)
 
       self.apply(_weights_init)
       self.size = self.model_size()
-      print(f"size definito {self.size}")
+      #print(f"size definito {self.size}")
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
@@ -102,7 +100,7 @@ class ClientModel(nn.Module):
         out = self.layer3(out)
 
         out = torch.nn.functional.avg_pool2d(out, out.size()[3])
-        out = out.view(out.size(0), -1)
+        out = out.reshape(out.shape[0], -1) 
         out = self.linear(out)
         return out
       

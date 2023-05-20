@@ -10,7 +10,7 @@ declare -a alphas=("1000") #1000 , 0.5, 0
 function run_fedavg() {
   echo "############################################## Running FedAvg ##############################################"
   alpha="$1"
-  python main.py -dataset cifar100 --num-rounds 5000 --eval-every 100 --batch-size 512 --num-epochs 1 --clients-per-round 10 -model vision_transformer -type ViT-L -lr 0.1 --weight-decay 0 -device cuda:0 -algorithm fedopt --server-lr 1 --server-opt sgd --num-workers 0 --where-loading init -alpha ${alpha}
+  python main.py -dataset cifar100 --num-rounds 5000 --eval-every 100 --batch-size 128 --num-epochs 1 --clients-per-round 10 -model resnet20 -type ViT-L -lr 0.1 --weight-decay 0 -device cuda:0 -algorithm fedopt --server-lr 1 --server-opt sgd --num-workers 0 --where-loading init -alpha ${alpha}
 }
 #num rounds => 1000
 
