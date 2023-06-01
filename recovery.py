@@ -1,16 +1,49 @@
 import torch
+import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from PIL import Image
 from models.cifar100.resnet20 import ClientModel as res20
 from train_resnet20 import evaluate
+import tqdm
 import inversefed
+from statistics import mean 
 import os
 import torchvision
 import datetime
 import time
 import wandb
+
+DEVICE = 'cuda'
+
+def evaluate(net, dataloader, print_tqdm = True):
+      # Define loss function
+  criterion = nn.CrossEntropyLoss() # for classification, we use Cross Entropy
+  
+  with torch.no_grad():
+    net = net.to(DEVICE) # this will bring the network to GPU if DEVICE is cuda
+    net.train(False) # Set Network to evaluation mode
+    running_corrects = 0
+    iterable = tqdm(dataloader) if print_tqdm else dataloader
+    losses = []
+    for images, labels in iterable:
+      images = images.to(DEVICE, dtype=torch.float)
+      labels = labels.to(DEVICE)
+      # Forward Pass
+      outputs = net(images)
+      loss = criterion(outputs, labels)
+      losses.append(loss.item())
+      # Get predictions
+      _, preds = torch.max(outputs.data, 1)
+      # Update Corrects
+      running_corrects += torch.sum(preds == labels.data).data.item()
+    # Calculate Accuracy
+    accuracy = running_corrects / float(len(dataloader.dataset))
+
+  return accuracy, mean(losses)
+
+
 
 start_time = time.time()
 num_images = 1
