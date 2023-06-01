@@ -101,7 +101,7 @@ config = dict(signed=True,
 
 rec_machine = inversefed.GradientReconstructor(model, (dm, ds), config, num_images=num_images)
 
-wandb.init(entity = "aml-2022", project="imageReconstruction")
+#wandb.init(entity = "aml-2022", project="imageReconstruction")
 output, stats = rec_machine.reconstruct(input_gradient, labels, img_shape=(3, 32, 32), n_epochs=checkpoint_epochs)
 
 test_mse = (output.detach() - ground_truth).pow(2).mean()
