@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from PIL import Image
 from models.cifar100.resnet20 import ClientModel as res20
-from train_resnet20 import evaluate
 import tqdm
 import inversefed
 from statistics import mean 
@@ -13,7 +12,8 @@ import os
 import torchvision
 import datetime
 import time
-import wandb
+import cv2
+
 
 DEVICE = 'cuda'
 
@@ -25,7 +25,8 @@ def evaluate(net, dataloader, print_tqdm = True):
     net = net.to(DEVICE) # this will bring the network to GPU if DEVICE is cuda
     net.train(False) # Set Network to evaluation mode
     running_corrects = 0
-    iterable = tqdm(dataloader) if print_tqdm else dataloader
+    #iterable = tqdm(dataloader) if print_tqdm else dataloader
+    iterable = dataloader
     losses = []
     for images, labels in iterable:
       images = images.to(DEVICE, dtype=torch.float)
@@ -48,9 +49,9 @@ def evaluate(net, dataloader, print_tqdm = True):
 start_time = time.time()
 num_images = 1
 trained_model = True
-target_id = 25
+target_id = 20
 image_path = 'images/'
-checkpoint_epochs = 60
+checkpoint_epochs = 161
 
 setup = inversefed.utils.system_startup()
 defs = inversefed.training_strategy('conservative')
@@ -61,8 +62,8 @@ model = res20(lr=0.1, num_classes=100, device='cuda')
 model.to(**setup)
 
 if trained_model:
-    checkpoint = torch.load(f'./Checkpoints/checkpoint_{checkpoint_epochs}')
-    model.load_state_dict(checkpoint['model_state_dict'])
+    checkpoint = torch.load(f'./checkpoint/resnet20_{checkpoint_epochs}')
+    model.load_state_dict(checkpoint)
 
 model.eval();
 
@@ -70,8 +71,8 @@ accuracy = evaluate(model, validloader)[0]
 print('\nTest Accuracy: {}'.format(accuracy))
 
 
-dm = torch.as_tensor(inversefed.consts.cifar10_mean, **setup)[:, None, None]
-ds = torch.as_tensor(inversefed.consts.cifar10_std, **setup)[:, None, None]
+dm = torch.as_tensor(inversefed.consts.cifar100_mean, **setup)[:, None, None]
+ds = torch.as_tensor(inversefed.consts.cifar100_std, **setup)[:, None, None]
 
 
 
@@ -125,7 +126,7 @@ config = dict(signed=True,
               lr=0.1,
               optim='adam',
               restarts=1,
-              max_iterations=2000,
+              max_iterations=8000,
               total_variation=1e-6,
               init='randn',
               filter='none',
@@ -135,7 +136,7 @@ config = dict(signed=True,
 rec_machine = inversefed.GradientReconstructor(model, (dm, ds), config, num_images=num_images)
 
 #wandb.init(entity = "aml-2022", project="imageReconstruction")
-output, stats = rec_machine.reconstruct(input_gradient, labels, img_shape=(3, 32, 32), n_epochs=checkpoint_epochs)
+output, stats = rec_machine.reconstruct(input_gradient, labels, img_shape=(3, 32, 32))
 
 test_mse = (output.detach() - ground_truth).pow(2).mean()
 feat_mse = (model(output.detach())- model(ground_truth)).pow(2).mean()  
@@ -147,13 +148,34 @@ os.makedirs(image_path, exist_ok=True)
 output_denormalized = torch.clamp(output * ds + dm, 0, 1)
 gt_denormalized = torch.clamp(ground_truth * ds + dm, 0, 1)
 
+
+
+
+
 if num_images == 1:
     rec_filename = f"res20_{target_id}.png"
     torchvision.utils.save_image(output_denormalized, os.path.join(image_path, rec_filename))
 
     gt_filename = f"groundTruth-{target_id}.png"
     torchvision.utils.save_image(gt_denormalized, os.path.join(image_path, gt_filename))
+
+    fig, ax = plt.subplots(1, 2)
+    ax = ax.ravel()
+    ax[0].imshow(output_denormalized[0].cpu().permute(1, 2, 0))
+    ax[0].set_title(f"loss: {round(stats['opt'],2)} | PSNR: {round(test_psnr, 2)}")
+    ax[1].imshow(gt_denormalized[0].cpu().permute(1, 2, 0))
+
+    fig.suptitle(f'resnet20 with {checkpoint_epochs} epochs, img {target_id}', fontsize=13)
+    fig.savefig('single_comparison.png')
+
+
 else:
+    fig_gt, ax_gt = plt.subplots(1, num_images, figsize=(7, 7), sharey = True)
+    ax_gt = ax_gt.ravel()
+
+    fig_rec, ax_rec = plt.subplots(1, num_images, figsize=(7, 7), sharey = True)
+    ax_rec = ax_rec.ravel()
+
     for idx, img in enumerate(output_denormalized):
         rec_filename = f"res20_{labels[idx]}.png"
         torchvision.utils.save_image(img, os.path.join(image_path, rec_filename))
@@ -161,6 +183,14 @@ else:
         gt_filename = f"groundTruth-{labels[idx]}.png"
         torchvision.utils.save_image(gt_denormalized[idx], os.path.join(image_path, gt_filename))
 
+        ax_rec[idx].imshow(img.cpu().permute(1, 2, 0))
+        ax_rec[idx].axis("off")
+
+        ax_gt[idx].imshow(gt_denormalized[idx].cpu().permute(1, 2, 0))
+        ax_gt[idx].axis("off")
+    
+    fig_gt.savefig('gt_mlt_comparison.png')
+    fig_rec.savefig('rec_mlt_comparison.png')
 
 
 
