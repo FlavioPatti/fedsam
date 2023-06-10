@@ -14,6 +14,7 @@ import wandb
 from datetime import datetime
 from torch.nn import Linear
 from cifar100.vision_transformer import VisionTransformer, CONFIGS
+from cifar100.mobilevit_v2 import MobileViTv2
 
 
 
@@ -27,7 +28,7 @@ from utils.cutout import Cutout
 from utils.main_utils import *
 from utils.model_utils import read_data
 
-os.environ["WANDB_API_KEY"] = "a4771dae610ad0306d4c407ecca287079d83d0d9"
+#os.environ["WANDB_API_KEY"] = "a4771dae610ad0306d4c407ecca287079d83d0d9"
 os.environ["WANDB_MODE"] = "online"
 
 def main():
@@ -71,6 +72,9 @@ def main():
     if args.model == "resnet20":
         mod = importlib.import_module(model_path)
         ClientModel = getattr(mod, 'ClientModel')
+    elif args.model == "mobilevit_v2":
+        client_model=MobileViTv2()
+        client_model.device = 'cuda'
     else:
         print(f"type = {args.type}")
         config = CONFIGS[args.type]
@@ -336,8 +340,8 @@ def init_wandb(args, alpha=None, run_id=None):
                 # Set entity to specify your username or team name
                 entity = "aml-2022", 
                 # Set the project where this run will be logged
-                project="FedAvg_1000",
-                group='vit_L',
+                project="FedAvg_1000_alpha0",
+                group='mobilevit_v2',
                 # Track hyperparameters and run metadata
                 config=configuration,
                 resume="allow")
