@@ -760,7 +760,7 @@ class MobileViTv2(BaseEncoder):
 
 def get_configuration() -> Dict:
 
-    width_multiplier = width_multiplier
+    width_multiplier = 2.0#width_multiplier
 
     ffn_multiplier = (
         2  # bound_fn(min_val=2.0, max_val=4.0, value=2.0 * width_multiplier)
