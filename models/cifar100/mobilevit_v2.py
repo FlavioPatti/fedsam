@@ -34,7 +34,7 @@ learn_augmentation_mode=None
 activation_name= "swish"
 normalization_name= "batch_norm"
 normalization_momentum= 0.1
-Dropout=0
+DROPOUT=0
 attn_norm_layer="layer_norm_2d"
 
 class BaseEncoder(nn.Module):
@@ -737,7 +737,7 @@ class MobileViTv2(BaseEncoder):
         attn_unit_dim = cfg["attn_unit_dim"]
         ffn_multiplier = cfg.get("ffn_multiplier")
 
-        dropout = Dropout
+        dropout = DROPOUT
 
         block.append(
             MobileViTBlockv2(
