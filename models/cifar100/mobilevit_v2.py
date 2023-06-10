@@ -28,7 +28,7 @@ model:
     linear_init_std_dev: 0.02
 """
 
-width_multiplier= 2.0
+Width_multiplier= 2.0
 global_pool= "mean"
 learn_augmentation_mode=None
 activation_name= "swish"
@@ -760,7 +760,7 @@ class MobileViTv2(BaseEncoder):
 
 def get_configuration() -> Dict:
 
-    width_multiplier = 2.0#width_multiplier
+    width_multiplier = Width_multiplier
 
     ffn_multiplier = (
         2  # bound_fn(min_val=2.0, max_val=4.0, value=2.0 * width_multiplier)
