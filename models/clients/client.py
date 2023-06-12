@@ -74,6 +74,10 @@ class Client:
         for j, data in enumerate(self.trainloader):
             input_data_tensor, target_data_tensor = data[0].to(self.device), data[1].to(self.device)
             optimizer.zero_grad()
+            print('model: ',self.model.__class__.__name__)
+            print('min: ',input_data_tensor.min())
+            print('max: ',input_data_tensor.max())
+
 
             if(self.model.__class__.__name__ == 'VisionTransformer'):
               outputs = self.model(input_data_tensor)[0] 

@@ -763,7 +763,7 @@ def get_configuration() -> Dict:
     width_multiplier = Width_multiplier
 
     ffn_multiplier = (
-        2  # bound_fn(min_val=2.0, max_val=4.0, value=2.0 * width_multiplier)
+        2  #bound_fn(min_val=2.0, max_val=4.0, value=2.0 * width_multiplier)
     )
     mv2_exp_mult = 2  # max(1.0, min(2.0, 2.0 * width_multiplier))
 
