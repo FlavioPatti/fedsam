@@ -63,7 +63,7 @@ model.to(**setup)
 
 if trained_model:
     checkpoint = torch.load(f'./checkpoint/resnet20_{checkpoint_epochs}')
-    model.load_state_dict(checkpoint)
+    model.load_state_dict(checkpoint['state_dict'])
 
 model.eval();
 
@@ -118,16 +118,16 @@ target_loss, _, _ = loss_fn(model(ground_truth), labels)
 input_gradient = torch.autograd.grad(target_loss, model.parameters())
 input_gradient = [grad.detach() for grad in input_gradient]
 
-config = dict(signed=True,
+config = dict(signed=False,
               boxed=True,
               cost_fn='sim',
               indices='def',
               weights='equal',
-              lr=0.1,
+              lr=0.13,
               optim='adam',
-              restarts=1,
+              restarts=2,
               max_iterations=8000,
-              total_variation=1e-6,
+              total_variation=1e-2,
               init='randn',
               filter='none',
               lr_decay=True,
@@ -161,9 +161,9 @@ if num_images == 1:
 
     fig, ax = plt.subplots(1, 2)
     ax = ax.ravel()
-    ax[0].imshow(output_denormalized[0].cpu().permute(1, 2, 0))
-    ax[0].set_title(f"loss: {round(stats['opt'],2)} | PSNR: {round(test_psnr, 2)}")
-    ax[1].imshow(gt_denormalized[0].cpu().permute(1, 2, 0))
+    ax[0].imshow(gt_denormalized[0].cpu().permute(1, 2, 0))
+    ax[1].imshow(output_denormalized[0].cpu().permute(1, 2, 0))
+    ax[1].set_title(f"loss: {round(stats['opt'],2)} | PSNR: {round(test_psnr, 2)} \n  MSE: {test_mse:2.4f} | FMSE: {feat_mse:2.4e} ")
 
     fig.suptitle(f'resnet20 with {checkpoint_epochs} epochs, img {target_id}', fontsize=13)
     fig.savefig('single_comparison.png')
