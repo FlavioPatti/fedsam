@@ -163,7 +163,7 @@ if num_images == 1:
     ax = ax.ravel()
     ax[0].imshow(gt_denormalized[0].cpu().permute(1, 2, 0))
     ax[1].imshow(output_denormalized[0].cpu().permute(1, 2, 0))
-    ax[1].set_title(f"loss: {round(stats['opt'],2)} | PSNR: {round(test_psnr, 2)} \n  MSE: {test_mse:2.4f} | FMSE: {feat_mse:2.4e} ")
+    ax[1].set_title(f"loss: {round(stats['opt'],2)} | PSNR: {round(test_psnr, 2)} \n  MSE: {test_mse:2.2f} | FMSE: {feat_mse:2.2e} ", fontsize = 10)
 
     fig.suptitle(f'resnet20 with {checkpoint_epochs} epochs, img {target_id}', fontsize=13)
     fig.savefig('single_comparison.png')
